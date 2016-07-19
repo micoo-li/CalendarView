@@ -10,6 +10,8 @@
 		1C35FE811D3DAC6F00E5B54E /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C35FE801D3DAC6F00E5B54E /* AppDelegate.swift */; };
 		1C35FE831D3DAC6F00E5B54E /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 1C35FE821D3DAC6F00E5B54E /* Assets.xcassets */; };
 		1C35FE861D3DAC6F00E5B54E /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = 1C35FE841D3DAC6F00E5B54E /* MainMenu.xib */; };
+		1C35FE8E1D3DAD3700E5B54E /* CalendarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C35FE8D1D3DAD3700E5B54E /* CalendarView.swift */; };
+		1C35FE901D3DB39200E5B54E /* CalendarMonthView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C35FE8F1D3DB39200E5B54E /* CalendarMonthView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -18,6 +20,8 @@
 		1C35FE821D3DAC6F00E5B54E /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		1C35FE851D3DAC6F00E5B54E /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = Base.lproj/MainMenu.xib; sourceTree = "<group>"; };
 		1C35FE871D3DAC6F00E5B54E /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		1C35FE8D1D3DAD3700E5B54E /* CalendarView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CalendarView.swift; sourceTree = "<group>"; };
+		1C35FE8F1D3DB39200E5B54E /* CalendarMonthView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CalendarMonthView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -53,6 +57,8 @@
 				1C35FE801D3DAC6F00E5B54E /* AppDelegate.swift */,
 				1C35FE821D3DAC6F00E5B54E /* Assets.xcassets */,
 				1C35FE841D3DAC6F00E5B54E /* MainMenu.xib */,
+				1C35FE8D1D3DAD3700E5B54E /* CalendarView.swift */,
+				1C35FE8F1D3DB39200E5B54E /* CalendarMonthView.swift */,
 				1C35FE871D3DAC6F00E5B54E /* Info.plist */,
 			);
 			path = CalendarView;
@@ -128,6 +134,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				1C35FE901D3DB39200E5B54E /* CalendarMonthView.swift in Sources */,
+				1C35FE8E1D3DAD3700E5B54E /* CalendarView.swift in Sources */,
 				1C35FE811D3DAC6F00E5B54E /* AppDelegate.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
