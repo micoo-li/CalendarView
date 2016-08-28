@@ -667,7 +667,7 @@
                 </menuItem>
             </items>
         </menu>
-        <window title="CalendarView" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" releasedWhenClosed="NO" animationBehavior="default" id="QvC-M9-y7g">
+        <window title="CalendarView" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" restorable="NO" releasedWhenClosed="NO" animationBehavior="default" id="QvC-M9-y7g">
             <windowStyleMask key="styleMask" titled="YES" closable="YES" miniaturizable="YES" resizable="YES"/>
             <windowPositionMask key="initialPositionMask" leftStrut="YES" rightStrut="YES" topStrut="YES" bottomStrut="YES"/>
             <rect key="contentRect" x="335" y="390" width="480" height="360"/>
@@ -681,10 +681,14 @@
                     </customView>
                 </subviews>
                 <constraints>
+                    <constraint firstItem="N25-g4-srW" firstAttribute="top" secondItem="EiT-Mj-1SZ" secondAttribute="top" id="00f-NM-ss5"/>
                     <constraint firstItem="N25-g4-srW" firstAttribute="top" secondItem="EiT-Mj-1SZ" secondAttribute="top" id="7Kc-6u-ZfZ"/>
                     <constraint firstAttribute="bottom" secondItem="N25-g4-srW" secondAttribute="bottom" id="IeS-1g-Q7w"/>
+                    <constraint firstItem="N25-g4-srW" firstAttribute="leading" secondItem="EiT-Mj-1SZ" secondAttribute="leading" id="NH9-5B-BOY"/>
                     <constraint firstItem="N25-g4-srW" firstAttribute="leading" secondItem="EiT-Mj-1SZ" secondAttribute="leading" id="SV1-Lq-WdN"/>
                     <constraint firstAttribute="trailing" secondItem="N25-g4-srW" secondAttribute="trailing" id="ZqN-ip-Xxb"/>
+                    <constraint firstAttribute="bottom" secondItem="N25-g4-srW" secondAttribute="bottom" id="agG-jT-RaU"/>
+                    <constraint firstAttribute="trailing" secondItem="N25-g4-srW" secondAttribute="trailing" id="nfa-U8-NNd"/>
                 </constraints>
             </view>
         </window>
