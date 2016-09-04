@@ -8,14 +8,24 @@
 
 import Cocoa
 
-class CalendarView: NSView, CalendarScrollViewDelegate {
+protocol CalendarViewDelegate {
+    func viewForDate(component: NSDateComponents) -> NSView
+}
+
+public class CalendarView: NSView, CalendarScrollViewDelegate {
     
     //MARK: Constants
     //Number of month views preloaded
     //This should be an odd number or else would not work
     let maxMonthsLoaded = 7
     
-    let rowsShown = 6
+    //MARK: Public Properties
+    
+    public var rowsShown = 6
+    
+    
+    
+    //=====================================
     
     //Scrolling works right now by checking if the user has scrolled through half of the view
     //This variable determines the delta y speed to jump to the other page even if the user hasn't scrolled to half of the page yet
@@ -43,6 +53,11 @@ class CalendarView: NSView, CalendarScrollViewDelegate {
         static let yearFont = NSFont.init(name: "HelveticaNeue-Light", size: fontSize)!
     }
     
+    struct Size {
+        static let monthButtonSize = CGSize(width: 36.0, height: 32.0)
+        static let todayButtonSize = CGSize(width: 72.0, height: 32.0)
+    }
+    
     //MARK: Properties
     var calendarMonthField: NSTextField = NSTextField()
     var calendarWeekField = [NSTextField]()
@@ -54,12 +69,19 @@ class CalendarView: NSView, CalendarScrollViewDelegate {
     var calendarMonthViews: [CalendarMonthView] = []
     
     
-    var calendarManager = CalendarManager()
+    var calendarManager = CalendarManager.defaultManager
     var startWeek: CalendarWeek = .Sunday
+    
+    var previousMonthButton = NSButton()
+    var nextMonthButton = NSButton()
+    var todayButton = NSButton()
+    
+    
+    var delegate: CalendarViewDelegate?
     
     
     //MARK: Initializers
-    required init?(coder: NSCoder) {
+    required public init?(coder: NSCoder) {
         super.init(coder: coder)
         
         initSetup()
@@ -112,6 +134,11 @@ class CalendarView: NSView, CalendarScrollViewDelegate {
             
             let view = CalendarMonthView.init(newCalendarDate: CalendarManager.monthAfter(i, calendarDate:  startMonth), frameRect: NSRect(origin: originOffset, size: calendarScrollView.contentView.frame.size), calendarRowHeight: calendarScrollView.contentView.bounds.size.height/CGFloat(rowsShown))
             
+            Swift.print(CalendarManager.monthAfter(i, calendarDate:  startMonth).description)
+            Swift.print(i)
+            Swift.print(startMonth.description)
+            Swift.print("=============")
+            
             view.wantsLayer = true
             
             originOffset.y += view.frame.size.height
@@ -144,13 +171,13 @@ class CalendarView: NSView, CalendarScrollViewDelegate {
         
         var weekOfDay = startWeek
         
-        
         for _ in 0..<7 {
             let weekDayField = NSTextField()
             
             weekDayField.stringValue = weekOfDay.shortString
             weekDayField.setupLabel()
             
+            weekDayField.font = NSFont(name: "HelveticaNeue-Light", size: 14.0)
             weekDayField.sizeToFit()
             
             calendarHeader.addSubview(weekDayField)
@@ -159,6 +186,30 @@ class CalendarView: NSView, CalendarScrollViewDelegate {
             
             calendarWeekField.append(weekDayField)
         }
+        
+        
+        nextMonthButton.title = ">"
+        todayButton.title = "Today"
+        previousMonthButton.title = "<"
+        
+        
+        nextMonthButton.bezelStyle = .RoundedBezelStyle
+        todayButton.bezelStyle = .RoundedBezelStyle
+        previousMonthButton.bezelStyle = .RoundedBezelStyle
+        
+        nextMonthButton.target = self
+        nextMonthButton.action = #selector(showNextMonth)
+        
+        previousMonthButton.target = self
+        previousMonthButton.action = #selector(showPrevMonth)
+        
+        todayButton.target = self
+        todayButton.action = #selector(showToday)
+        
+        self.addSubview(nextMonthButton)
+        self.addSubview(todayButton)
+        self.addSubview(previousMonthButton)
+        
         
         updateCalendarHeaderLayout()
 //
@@ -171,6 +222,43 @@ class CalendarView: NSView, CalendarScrollViewDelegate {
         
         //Just so it fixes the layout
         contentViewDidResize()
+    }
+    
+    //MARK: Calendar View Public Methods
+    
+    public func show(month: Int, year: Int) {
+        
+        
+        
+    }
+    
+    //MARK: Calendar Methods
+    
+    func showNextMonth() {
+        let currentMonthView = viewClosestTo(calendarScrollView.documentVisibleRect)
+        
+        let nextMonthView = calendarMonthViews[calendarMonthViews.indexOf(currentMonthView)! + 1]
+        
+        calendarManager.selectedDateComponents = nextMonthView.date
+        updateCalendarHeader()
+        
+        calendarScrollView.animateToY(nextMonthView.frame.origin.y)
+    }
+    
+    
+    func showPrevMonth() {
+        let currentMonthView = viewClosestTo(calendarScrollView.documentVisibleRect)
+        
+        let nextMonthView = calendarMonthViews[calendarMonthViews.indexOf(currentMonthView)! - 1]
+        
+        calendarManager.selectedDateComponents = nextMonthView.date
+        updateCalendarHeader()
+        
+        calendarScrollView.animateToY(nextMonthView.frame.origin.y)
+    }
+    
+    func showToday() {
+        
     }
     
     //MARK: Calendar Header Methods
@@ -190,6 +278,10 @@ class CalendarView: NSView, CalendarScrollViewDelegate {
         calendarMonthField.frame.origin.x = Spacing.monthOriginX
         
         calendarMonthField.frame.origin.y = calendarHeaderHeight - Spacing.monthOriginYFromTop - Font.fontSize
+        
+        nextMonthButton.frame = NSRect(origin: CGPoint(x: self.frame.width - Spacing.monthOriginX - Size.monthButtonSize.width, y: Spacing.monthOriginYFromTop), size: Size.monthButtonSize)
+        todayButton.frame = NSRect(origin: CGPoint(x: nextMonthButton.frame.origin.x - Size.todayButtonSize.width + 12, y: Spacing.monthOriginYFromTop), size: Size.todayButtonSize)
+        previousMonthButton.frame = NSRect(origin: CGPoint(x: todayButton.frame.origin.x - Size.monthButtonSize.width + 12, y: Spacing.monthOriginYFromTop), size: Size.monthButtonSize)
         
         
         //Drawing the labels for the day of the week
@@ -225,13 +317,16 @@ class CalendarView: NSView, CalendarScrollViewDelegate {
         var originY = startOriginY
         
         for (index, calendarMonthView) in calendarMonthViews.enumerate() {
-            calendarMonthView.frame.origin.y = originY
             
-            
-            //calendarMonthView.frame.size.height = newHeight
             calendarMonthView.rowHeight = calendarScrollView.contentView.bounds.size.height/CGFloat(rowsShown)
             
-            calendarMonthView.frame.size.width = calendarScrollView.contentView.frame.size.width
+            var newFrame = calendarMonthView.frame
+            
+            newFrame.origin.y = originY
+            newFrame.size.width = calendarScrollView.contentView.frame.size.width
+            
+            calendarMonthView.frame = newFrame
+            
             originY += calendarMonthView.frame.height
         }
         
@@ -246,27 +341,6 @@ class CalendarView: NSView, CalendarScrollViewDelegate {
     // MARK: Calendar Scroll View Delegate
     
     func viewClosestTo(frame: CGRect) -> CalendarMonthView {
-//        let currentY = frame.origin.y
-//        
-//        let centerViewY = calendarMonthViews[calendarMonthViews.count/2].frame.origin.y
-//        
-//        Swift.print(calendarMonthViews[calendarMonthViews.count/2].frame.origin.y)
-//        Swift.print(calendarMonthViews[calendarMonthViews.count/2].frame.height)
-//        Swift.print(currentY)
-//        
-//        
-//        if currentY < centerViewY {
-//            
-//        }
-//        else {
-//           let diff = currentY - centerViewY
-//            
-//            if diff < calendarMonthViews[calendarMonthViews.count/2].frame.height/2 {
-//                //return calendarMonthViews[calendarMonthViews.count/2]
-//            }
-//        }
-//        
-//        Swift.print("=====")
        
         var maxHeight:CGFloat = 0.0
         var viewToScroll: CalendarMonthView!
@@ -279,19 +353,79 @@ class CalendarView: NSView, CalendarScrollViewDelegate {
             }
         }
         
-        return viewToScroll
+        //If user scrolls too fast it'll still go out of bounds
+        //In that case pick the furthest view
+        if let viewToScroll = viewToScroll {
+            return viewToScroll
+        }
+        else {
+            if frame.origin.y < startOriginY {
+                return calendarMonthViews[1]
+            }
+            else {
+                return calendarMonthViews[calendarMonthViews.count - 2]
+            }
+        }
         
+        
+    }
+    
+    func scrollViewDidScroll(scrollView: CalendarScrollView, event: NSEvent) -> Bool {
+        
+        let closestView = viewClosestTo(scrollView.documentVisibleRect)
+        
+        calendarManager.selectedDateComponents = closestView.date
+        
+        updateCalendarHeader()
+        
+        if abs(event.deltaY) > 2.0 {
+            var newBounds = calendarScrollView.bounds.origin
+            
+            if event.deltaY < 0 {
+                newBounds.y -= 2.0
+            }
+            else if event.deltaY > 0 {
+                newBounds.y += 2.0
+            }
+            
+            contentView.setBoundsOrigin(newBounds)
+            
+            return false
+        }
+        
+        
+        return true
     }
     
     func scrollDidEnd(scrollView: CalendarScrollView, deltaY: CGFloat) {
         
         var closestView = viewClosestTo(scrollView.documentVisibleRect)
         
-        if deltaY > 1.0 {
-            closestView = calendarMonthViews[calendarMonthViews.indexOf(closestView)! - 1]
+        Swift.print(deltaY)
+        
+        if deltaY > 5.0 {
+            closestView = calendarMonthViews[calendarMonthViews.count/2 - 1]
+        }
+        else if deltaY < -5.0 {
+            closestView = calendarMonthViews[calendarMonthViews.count/2 + 1]
+            
+        }
+        
+        else if deltaY > 1.0 {
+            if let view = calendarMonthViews[calendarMonthViews.indexOf(closestView)! - 1] as? CalendarMonthView {
+               closestView = view
+            }
+            else {
+                closestView = calendarMonthViews.first!
+            }
         }
         else if deltaY < -1.0 {
-            closestView = calendarMonthViews[calendarMonthViews.indexOf(closestView)! + 1]
+            if let view = calendarMonthViews[calendarMonthViews.indexOf(closestView)! + 1] as? CalendarMonthView {
+                closestView = view
+            }
+            else {
+                closestView = calendarMonthViews.last!
+            }
         }
         
         calendarManager.selectedDateComponents = closestView.date
@@ -311,11 +445,9 @@ class CalendarView: NSView, CalendarScrollViewDelegate {
             if viewIndex < maxMonthsLoaded/2 {
                 
                 for _ in 0..<maxMonthsLoaded/2 - viewIndex {
-                    Swift.print(calendarMonthViews)
                     calendarMonthViews.insert(calendarMonthViews.popLast()!, atIndex: 0)
-                    Swift.print(calendarMonthViews)
                     //Call recycle view
-                    Swift.print("Bottom to top")
+                    calendarMonthViews.first?.date = CalendarManager.prevMonth(calendarMonthViews[1].date)
                 }
                 
             }
@@ -323,7 +455,7 @@ class CalendarView: NSView, CalendarScrollViewDelegate {
                 
                 for _ in 0..<viewIndex - maxMonthsLoaded/2 {
                     calendarMonthViews.append(calendarMonthViews.removeFirst())
-                    Swift.print("Top to bottom")
+                    calendarMonthViews.last?.date = CalendarManager.nextMonth(calendarMonthViews[calendarMonthViews.count-2].date)
                 }
             }
             
@@ -331,28 +463,6 @@ class CalendarView: NSView, CalendarScrollViewDelegate {
         }
     }
     
-    //This view rearranges the view when its scrolled too low so the top view goes to the bottom
-    //And the if its scrolled too high the bottom view goes to the top
-    func rearrangeBottomViewToTop() {
-        
-        let monthView = calendarMonthViews.first!
-        
-        monthView.frame.origin.y = calendarMonthViews.last!.frame.origin.y + monthView.frame.size.height
-        
-        
-        calendarMonthViews.append(calendarMonthViews.removeFirst())
-        
-        var pageToScroll = CGFloat(0.0)
-        
-        while calendarMonthViews.first!.frame.origin.y != startOriginY {
-            pageToScroll += 1.0
-            for calendarMonthView in calendarMonthViews {
-                calendarMonthView.frame.origin.y -= monthView.frame.size.height
-            }
-        }
-     
-        calendarScrollView.contentView.setBoundsOrigin(calendarMonthViews[calendarMonthViews.count/2].frame.origin)
-    }
     
     func rearrangeMonthViewFrames() {
         var originOffset = CGPoint(x: 0, y: startOriginY)
@@ -362,14 +472,13 @@ class CalendarView: NSView, CalendarScrollViewDelegate {
             originOffset.y += view.frame.size.height
         }
         
-        Swift.print(calendarMonthViews)
         calendarScrollView.contentView.setBoundsOrigin(calendarMonthViews[calendarMonthViews.count/2].frame.origin)
         
     }
     
     //MARK: Override methods
     
-    override var flipped: Bool {
+    override public var flipped: Bool {
         get {
             return true
         }

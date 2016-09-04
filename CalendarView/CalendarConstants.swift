@@ -51,6 +51,35 @@ enum CalendarMonth: Int {
         }
     }
     
+    var shortString: String {
+        switch self {
+        case January:
+            return "Jan"
+        case February:
+            return "Feb"
+        case March:
+            return "Mar"
+        case April:
+            return "Apr"
+        case May:
+            return "May"
+        case June:
+            return "Jun"
+        case July:
+            return "Jul"
+        case August:
+            return "Aug"
+        case September:
+            return "Sep"
+        case October:
+            return "Oct"
+        case November:
+            return "Nov"
+        case December:
+            return "Dec"
+        }
+    }
+    
 }
 
 enum CalendarWeek: Int {

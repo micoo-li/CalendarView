@@ -8,29 +8,54 @@
 
 import Cocoa
 
-struct CalendarDateComponents {
+struct CalendarDateComponents: Hashable {
     var month: CalendarMonth
     var year: Int
+    
+    init(newMonth: CalendarMonth, newYear: Int) {
+        month = newMonth
+        year = newYear
+    }
     
     var description: String {
         get {
             return month.string + ", " + String(year)
         }
     }
+    
+    var hashValue: Int {
+        return description.hashValue
+    }
 }
 
-class CalendarManager {
 
+@warn_unused_result func ==(_ lhs: CalendarDateComponents, _ rhs: CalendarDateComponents) -> Bool {
+    if lhs.month == rhs.month && lhs.year == rhs.year {
+        return true
+    }
+    return false
+    }
+
+class CalendarManager {
+    
+    //MARK: Constants
+    static let secondsInDay = 86400.0
+    
+    
+    static let defaultManager = CalendarManager()
+    
     var calendar : NSCalendar = NSCalendar.currentCalendar()
     
     var currentDateComponents: CalendarDateComponents
     
     var selectedDateComponents: CalendarDateComponents
     
+    var todayDateComponent: NSDateComponents
+    
     init() {
-        let todayDateComponent = calendar.components([.Day, .Month, .Year, .Weekday], fromDate: NSDate())
+        todayDateComponent = calendar.components([.Day, .Month, .Year, .Weekday], fromDate: NSDate())
         
-        currentDateComponents = CalendarDateComponents(month: CalendarMonth(rawValue: todayDateComponent.month)!, year: todayDateComponent.year)
+        currentDateComponents = CalendarDateComponents(newMonth: CalendarMonth(rawValue: todayDateComponent.month)!, newYear: todayDateComponent.year)
         
         selectedDateComponents = currentDateComponents
     }
@@ -146,6 +171,41 @@ class CalendarManager {
         }
         
         return date
+    }
+    
+    class func next(calendarDate: NSDateComponents) -> NSDateComponents {
+        let calendar = NSCalendar.currentCalendar()
+        
+        var date = calendar.dateFromComponents(calendarDate)!
+        date = date.dateByAddingTimeInterval(secondsInDay)
+        
+        return calendar.components([.Day, .Year, .Month, .Weekday], fromDate: date)
+    }
+    
+    class func prev(calendarDate: NSDateComponents) -> NSDateComponents {
+        let calendar = NSCalendar.currentCalendar()
+        
+        var date = calendar.dateFromComponents(calendarDate)!
+        date = date.dateByAddingTimeInterval(-secondsInDay)
+        
+        return calendar.components([.Day, .Month, .Year, .Weekday], fromDate: date)
+    }
+    
+    class func startingSundayFor(calendarDate: CalendarDateComponents) -> NSDateComponents {
+        let calendar = NSCalendar.currentCalendar()
+        
+        let dateComponents = NSDateComponents()
+        
+        dateComponents.month = calendarDate.month.rawValue
+        dateComponents.year = calendarDate.year
+        dateComponents.day = 1
+        
+        var date = calendar.dateFromComponents(dateComponents)!
+        
+        let weekday = calendar.component(.Weekday, fromDate: date)
+        date = date.dateByAddingTimeInterval(-secondsInDay * Double(weekday - 1))
+        
+        return calendar.components([.Weekday, .Month, .Day, .Year], fromDate: date)
     }
     
 }

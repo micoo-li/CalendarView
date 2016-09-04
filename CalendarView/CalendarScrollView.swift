@@ -10,6 +10,7 @@ import Cocoa
 import CoreGraphics
 
 protocol CalendarScrollViewDelegate {
+    func scrollViewDidScroll(scrollView: CalendarScrollView, event: NSEvent) -> Bool
     func scrollDidEnd(scrollView: CalendarScrollView, deltaY: CGFloat)
     
     func momentumScrollingDidStart(scrollView: CalendarScrollView, deltaY: CGFloat)
@@ -39,9 +40,14 @@ class CalendarScrollView: NSScrollView {
         if theEvent.phase == .Began {
             //self.stopAnimation()
         }
+        
         if theEvent.phase == .Changed {
             deltaY = theEvent.deltaY
+            if delegate?.scrollViewDidScroll(self, event: theEvent) == false {
+               return
+            }
         }
+        
         if theEvent.phase == .Ended {
             delegate?.scrollDidEnd(self, deltaY: deltaY)
         }

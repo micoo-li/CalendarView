@@ -9,6 +9,8 @@
 import Cocoa
 
 class CalendarContentView: NSView {
+    
+    
 
     override func drawRect(dirtyRect: NSRect) {
         super.drawRect(dirtyRect)
